@@ -3,6 +3,26 @@ use std::{
     net::{TcpListener, TcpStream},
 };
 
+const LIVE_MODE: bool = true;
+
+struct MarkdownLoader {
+    cache: String,
+}
+
+impl MarkdownLoader {
+    pub fn load(&mut self) -> String {
+        if !self.cache.is_empty() {
+            self.cache.clone()
+        } else {
+            Self::load_md()
+        }
+    }
+
+    fn load_md() -> String {
+        todo!("Load MD and return HTML as a String");
+    }
+}
+
 fn main() {
     let listener = TcpListener::bind("0.0.0.0:7250").unwrap();
 

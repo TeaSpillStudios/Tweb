@@ -1,4 +1,5 @@
 use markdown::file_to_html;
+use std::env::args;
 use std::io::Write;
 use std::net::{TcpListener, TcpStream};
 use std::path::Path;
@@ -59,15 +60,24 @@ const CSS: &str = "
 #[derive(Default)]
 struct MarkdownLoader {
     cache: String,
+    path: String,
 }
 
 impl MarkdownLoader {
     pub fn load(&mut self) -> String {
+        if self.path.is_empty() {
+            return self.cache.clone();
+        }
+
         if !self.cache.is_empty() && !LIVE_MODE {
             self.cache.clone()
         } else {
             Self::load_md()
         }
+    }
+
+    pub fn set_path(&mut self, path: String) {
+        self.path = path;
     }
 
     fn load_md() -> String {

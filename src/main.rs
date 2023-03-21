@@ -1,7 +1,7 @@
-use std::{
-    io::Write,
-    net::{TcpListener, TcpStream},
-};
+use markdown::file_to_html;
+use std::io::Write;
+use std::net::{TcpListener, TcpStream};
+use std::path::Path;
 
 const LIVE_MODE: bool = true;
 
@@ -20,7 +20,7 @@ impl MarkdownLoader {
     }
 
     fn load_md() -> String {
-        todo!("Load MD and return HTML as a String");
+        file_to_html(Path::new("index.md")).unwrap()
     }
 }
 

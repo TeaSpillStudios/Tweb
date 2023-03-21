@@ -89,8 +89,18 @@ fn main() {
     let listener = TcpListener::bind("0.0.0.0:7250").unwrap();
     let mut markdown_loader = MarkdownLoader::default();
 
-    for arg in args() {
-        markdown_loader.set_path(arg);
+    let args: Vec<String> = args().collect();
+
+    if args.len() > 1 {
+        if !Path::new(&args[1]).is_file() {
+            eprintln!("Please specify a valid Markdown file!");
+            return;
+        };
+
+        markdown_loader.set_path(args[1].clone());
+    } else {
+        eprintln!("Please specify a Markdown file!");
+        return;
     }
 
     for stream in listener.incoming() {

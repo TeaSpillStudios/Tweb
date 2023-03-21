@@ -89,6 +89,10 @@ fn main() {
     let listener = TcpListener::bind("0.0.0.0:7250").unwrap();
     let mut markdown_loader = MarkdownLoader::default();
 
+    for arg in args() {
+        markdown_loader.set_path(arg);
+    }
+
     for stream in listener.incoming() {
         let stream = stream.unwrap();
 

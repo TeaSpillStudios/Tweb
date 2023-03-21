@@ -81,7 +81,7 @@ impl MarkdownLoader {
     }
 
     fn load_md(path: String) -> String {
-        file_to_html(Path::new(&path)).unwrap()
+        file_to_html(Path::new(&path)).expect("Failed to load the Markdown file!")
     }
 }
 

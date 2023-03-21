@@ -1,17 +1,18 @@
 use std::{
-    io::{BufRead, BufReader, Write},
+    io::Write,
     net::{TcpListener, TcpStream},
 };
 
 const LIVE_MODE: bool = true;
 
+#[derive(Default)]
 struct MarkdownLoader {
     cache: String,
 }
 
 impl MarkdownLoader {
     pub fn load(&mut self) -> String {
-        if !self.cache.is_empty() {
+        if !self.cache.is_empty() && !LIVE_MODE {
             self.cache.clone()
         } else {
             Self::load_md()
@@ -25,26 +26,23 @@ impl MarkdownLoader {
 
 fn main() {
     let listener = TcpListener::bind("0.0.0.0:7250").unwrap();
+    let mut markdown_loader = MarkdownLoader::default();
 
     for stream in listener.incoming() {
         let stream = stream.unwrap();
 
-        handle_request(stream);
+        handle_request(stream, &mut markdown_loader);
     }
 }
 
-fn handle_request(mut stream: TcpStream) {
-    let buf_reader = BufReader::new(&mut stream);
+fn handle_request(mut stream: TcpStream, markdown_loader: &mut MarkdownLoader) {
+    let status = "HTTP/1.1 200 OK";
+    let data = markdown_loader.load();
+    let length = data.len();
 
-    let http_request: Vec<_> = buf_reader
-        .lines()
-        .map(|result| result.unwrap())
-        .take_while(|line| !line.is_empty())
-        .collect();
-
-    println!("Request: {http_request:#?}");
+    let response = format!("{status}\r\nContent-Length: {length}\r\n\r\n{data}");
 
     stream
-        .write_all(b"HTTP/1.1 200 OK\r\n\r\n")
+        .write_all(response.as_bytes())
         .expect("Failed to write to stream TCP.");
 }

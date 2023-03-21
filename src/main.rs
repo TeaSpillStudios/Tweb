@@ -72,7 +72,7 @@ impl MarkdownLoader {
         if !self.cache.is_empty() && !LIVE_MODE {
             self.cache.clone()
         } else {
-            Self::load_md()
+            Self::load_md(self.path.clone())
         }
     }
 
@@ -80,8 +80,8 @@ impl MarkdownLoader {
         self.path = path;
     }
 
-    fn load_md() -> String {
-        file_to_html(Path::new("index.md")).unwrap()
+    fn load_md(path: String) -> String {
+        file_to_html(Path::new(&path)).unwrap()
     }
 }
 

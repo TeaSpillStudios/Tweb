@@ -111,6 +111,8 @@ fn main() {
 }
 
 fn handle_request(mut stream: TcpStream, markdown_loader: &mut MarkdownLoader) {
+    println!("Connection established");
+
     let status = "HTTP/1.1 200 OK";
     let data = format!("<!DOCTYPE html>{}{}", CSS, markdown_loader.load());
     let length = data.len();

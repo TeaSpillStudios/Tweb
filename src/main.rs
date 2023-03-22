@@ -71,14 +71,22 @@ impl MarkdownLoader {
         }
 
         if !self.cache.is_empty() && !LIVE_MODE {
-            self.cache.clone()
+            self.cache
+                .clone()
+                .lines()
+                .map(|s| format!("    {s}\n"))
+                .collect::<String>()
         } else {
             info!("Live mode is on. Regenerating HTML");
 
             self.cache =
                 file_to_html(Path::new(&self.path)).expect("Failed to load the Markdown file!");
 
-            self.cache.clone()
+            self.cache
+                .clone()
+                .lines()
+                .map(|s| format!("    {s}\n"))
+                .collect::<String>()
         }
     }
 

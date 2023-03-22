@@ -8,7 +8,7 @@ use std::io::Write;
 use std::net::{IpAddr, TcpListener, TcpStream};
 use std::path::Path;
 
-const LIVE_MODE: bool = true;
+const LIVE_MODE: bool = false;
 const LOG_IPS: bool = true;
 const CSS: &str = include_str!("styles.css");
 
@@ -25,6 +25,8 @@ impl MarkdownLoader {
         }
 
         if !self.cache.is_empty() && !LIVE_MODE {
+            info!("Serving from cache.");
+
             self.cache
                 .clone()
                 .lines()

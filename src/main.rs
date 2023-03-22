@@ -1,11 +1,12 @@
 use log::{error, info, LevelFilter};
 use markdown::file_to_html;
 use std::env::args;
+use std::fs;
 use std::io::Write;
 use std::net::{TcpListener, TcpStream};
 use std::path::Path;
 
-const LIVE_MODE: bool = false;
+const LIVE_MODE: bool = true;
 const CSS: &str = "
     <style>
         :root {
@@ -98,16 +99,17 @@ impl MarkdownLoader {
         self.path = path;
     }
 
-    pub fn get_page_name(&self) -> String {
-        let file_name = Path::new(&self.path)
-            .file_stem()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .to_lowercase();
+    pub fn get_page_name(&mut self) -> String {
+        let markdown_title = fs::read_to_string(&self.path).unwrap();
 
-        let mut chars = file_name.chars();
-        chars.next().unwrap().to_uppercase().collect::<String>() + chars.as_str()
+        markdown_title
+            .lines()
+            .next()
+            .unwrap()
+            .split_once(" ")
+            .unwrap()
+            .1
+            .to_string()
     }
 }
 
@@ -148,7 +150,8 @@ fn handle_request(mut stream: TcpStream, markdown_loader: &mut MarkdownLoader) {
 
     let status = "HTTP/1.1 200 OK";
     let data = format!(
-        "<!DOCTYPE html>\n<head>{}</head>\n\n<body>\n{}</body>",
+        "<!DOCTYPE html>\n<head>\n    <title>{}</title>\n{}</head>\n\n<body>\n{}</body>",
+        markdown_loader.get_page_name(),
         CSS,
         markdown_loader.load()
     );

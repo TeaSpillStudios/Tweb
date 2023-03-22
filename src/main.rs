@@ -8,7 +8,7 @@ use std::io::Write;
 use std::net::{IpAddr, TcpListener, TcpStream};
 use std::path::Path;
 
-const LIVE_MODE: bool = false;
+const LIVE_MODE: bool = true;
 const LOG_IPS: bool = true;
 const CSS: &str = include_str!("styles.css");
 
@@ -60,7 +60,7 @@ impl MarkdownLoader {
         markdown_title
             .lines()
             .next()
-            .unwrap()
+            .unwrap_or("Default title")
             .split_once(' ')
             .unwrap()
             .1

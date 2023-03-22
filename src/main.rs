@@ -5,7 +5,7 @@ use std::io::Write;
 use std::net::{TcpListener, TcpStream};
 use std::path::Path;
 
-const LIVE_MODE: bool = true;
+const LIVE_MODE: bool = false;
 const CSS: &str = "
     <style>
         :root {
@@ -77,7 +77,11 @@ impl MarkdownLoader {
                 .map(|s| format!("    {s}\n"))
                 .collect::<String>()
         } else {
-            info!("Live mode is on. Regenerating HTML");
+            if LIVE_MODE {
+                info!("Live mode is on. Regenerating HTML");
+            } else {
+                info!("Regenerating HTML");
+            }
 
             self.cache =
                 file_to_html(Path::new(&self.path)).expect("Failed to load the Markdown file!");

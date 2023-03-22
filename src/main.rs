@@ -1,3 +1,4 @@
+use log::{error, info, LevelFilter};
 use markdown::file_to_html;
 use std::env::args;
 use std::io::Write;
@@ -72,6 +73,8 @@ impl MarkdownLoader {
         if !self.cache.is_empty() && !LIVE_MODE {
             self.cache.clone()
         } else {
+            info!("Regenerating HTML");
+
             self.cache =
                 file_to_html(Path::new(&self.path)).expect("Failed to load the Markdown file!");
 
@@ -85,22 +88,28 @@ impl MarkdownLoader {
 }
 
 fn main() {
-    let listener = TcpListener::bind("0.0.0.0:7250").unwrap();
-    let mut markdown_loader = MarkdownLoader::default();
+    pretty_env_logger::formatted_builder()
+        .filter_level(LevelFilter::Info)
+        .init();
 
+    let mut markdown_loader = MarkdownLoader::default();
     let args: Vec<String> = args().collect();
 
     if args.len() > 1 {
         if !Path::new(&args[1]).is_file() {
-            eprintln!("Please specify a valid Markdown file!");
+            error!("Please specify a valid Markdown file!");
             return;
         };
 
         markdown_loader.set_path(args[1].clone());
     } else {
-        eprintln!("Please specify a Markdown file!");
+        error!("Please specify a Markdown file!");
         return;
     }
+
+    let listener = TcpListener::bind("0.0.0.0:7250").unwrap();
+
+    info!("Initialised. Listening on `localhost:7250`");
 
     for stream in listener.incoming() {
         let stream = stream.unwrap();
@@ -110,7 +119,7 @@ fn main() {
 }
 
 fn handle_request(mut stream: TcpStream, markdown_loader: &mut MarkdownLoader) {
-    println!("Connection established");
+    info!("Connection established");
 
     let status = "HTTP/1.1 200 OK";
     let data = format!("<!DOCTYPE html>{}{}", CSS, markdown_loader.load());

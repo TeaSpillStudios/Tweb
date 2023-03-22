@@ -3,6 +3,17 @@ name = "tweb"
 version = "0.1.0"
 edition = "2021"
 
+[profile.release]
+opt-level = 3
+debug = false
+debug-assertions = false
+overflow-checks = false
+lto = true
+panic = 'unwind'
+incremental = true
+codegen-units = 1
+rpath = false
+
 [dependencies]
 log = "0.4.17"
 markdown = "0.3.0"

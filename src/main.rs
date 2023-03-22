@@ -1,12 +1,15 @@
+use chrono::Utc;
 use log::{error, info, LevelFilter};
 use markdown::file_to_html;
 use std::env::args;
 use std::fs;
+use std::fs::OpenOptions;
 use std::io::Write;
-use std::net::{TcpListener, TcpStream};
+use std::net::{IpAddr, TcpListener, TcpStream};
 use std::path::Path;
 
 const LIVE_MODE: bool = true;
+const LOG_IPS: bool = true;
 const CSS: &str = include_str!("styles.css");
 
 #[derive(Default)]
@@ -101,6 +104,10 @@ fn handle_request(mut stream: TcpStream, markdown_loader: &mut MarkdownLoader) {
         stream.peer_addr().unwrap().ip()
     );
 
+    if LOG_IPS {
+        log_ip(stream.peer_addr().unwrap().ip());
+    }
+
     let status = "HTTP/1.1 200 OK";
     let data = format!(
         "<!DOCTYPE html>\n<head>\n    <title>{}</title>\n{}</head>\n\n<body>\n{}</body>",
@@ -115,4 +122,17 @@ fn handle_request(mut stream: TcpStream, markdown_loader: &mut MarkdownLoader) {
     stream
         .write_all(response.as_bytes())
         .expect("Failed to write to stream TCP.");
+}
+
+fn log_ip(ip: IpAddr) {
+    let mut file = OpenOptions::new()
+        .append(true)
+        .create(true)
+        .open("./log.md")
+        .unwrap();
+
+    let date = Utc::now().date_naive().to_string();
+    let data = format!("## {date}\n    {ip}\n\n");
+
+    file.write_all(data.as_bytes()).unwrap();
 }

@@ -85,7 +85,7 @@ fn main() {
 
     let listener = TcpListener::bind("0.0.0.0:7250").unwrap();
 
-    info!("Initialised. Listening on `localhost:7250`");
+    info!("Initialised. Listening on `http://localhost:7250`");
     info!("Page name: {}", markdown_loader.get_page_name());
 
     for stream in listener.incoming() {

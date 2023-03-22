@@ -73,7 +73,7 @@ impl MarkdownLoader {
         if !self.cache.is_empty() && !LIVE_MODE {
             self.cache.clone()
         } else {
-            info!("Regenerating HTML");
+            info!("Live mode is on. Regenerating HTML");
 
             self.cache =
                 file_to_html(Path::new(&self.path)).expect("Failed to load the Markdown file!");
@@ -84,6 +84,18 @@ impl MarkdownLoader {
 
     pub fn set_path(&mut self, path: String) {
         self.path = path;
+    }
+
+    pub fn get_page_name(&self) -> String {
+        let file_name = Path::new(&self.path)
+            .file_stem()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_lowercase();
+
+        let mut chars = file_name.chars();
+        chars.next().unwrap().to_uppercase().collect::<String>() + chars.as_str()
     }
 }
 
@@ -110,6 +122,7 @@ fn main() {
     let listener = TcpListener::bind("0.0.0.0:7250").unwrap();
 
     info!("Initialised. Listening on `localhost:7250`");
+    info!("Page name: {}", markdown_loader.get_page_name());
 
     for stream in listener.incoming() {
         let stream = stream.unwrap();
@@ -122,7 +135,12 @@ fn handle_request(mut stream: TcpStream, markdown_loader: &mut MarkdownLoader) {
     info!("Connection established");
 
     let status = "HTTP/1.1 200 OK";
-    let data = format!("<!DOCTYPE html>{}{}", CSS, markdown_loader.load());
+    let data = format!(
+        "<!DOCTYPE html>\n<head>{}<title>{}</title></head>\n<body>\n{}</body>",
+        CSS,
+        markdown_loader.get_page_name(),
+        markdown_loader.load()
+    );
     let length = data.len();
 
     let response = format!("{status}\r\nContent-Length: {length}\r\n\r\n{data}");

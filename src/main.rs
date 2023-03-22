@@ -56,7 +56,7 @@ impl MarkdownLoader {
             .lines()
             .next()
             .unwrap()
-            .split_once(" ")
+            .split_once(' ')
             .unwrap()
             .1
             .to_string()

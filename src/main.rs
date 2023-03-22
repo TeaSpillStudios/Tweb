@@ -72,16 +72,15 @@ impl MarkdownLoader {
         if !self.cache.is_empty() && !LIVE_MODE {
             self.cache.clone()
         } else {
-            Self::load_md(self.path.clone())
+            self.cache =
+                file_to_html(Path::new(&self.path)).expect("Failed to load the Markdown file!");
+
+            self.cache.clone()
         }
     }
 
     pub fn set_path(&mut self, path: String) {
         self.path = path;
-    }
-
-    fn load_md(path: String) -> String {
-        file_to_html(Path::new(&path)).expect("Failed to load the Markdown file!")
     }
 }
 

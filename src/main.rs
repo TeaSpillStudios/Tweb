@@ -1,6 +1,7 @@
 use chrono::Utc;
 use log::{error, info, LevelFilter};
 use markdown::file_to_html;
+use std::collections::HashMap;
 use std::env::args;
 use std::fs;
 use std::fs::OpenOptions;
@@ -14,21 +15,22 @@ const CSS: &str = include_str!("styles.css");
 
 #[derive(Default)]
 struct MarkdownLoader {
-    cache: String,
+    cache: HashMap<String, String>,
     path: String,
 }
 
 impl MarkdownLoader {
-    pub fn load(&mut self) -> String {
+    pub fn load_page(&mut self, page_name: &str) -> String {
         if self.path.is_empty() {
-            return self.cache.clone();
+            return self.cache.get(page_name).unwrap().to_owned();
         }
 
-        if !self.cache.is_empty() && !LIVE_MODE {
+        if self.cache.contains_key(page_name) && !LIVE_MODE {
             info!("Serving from cache.");
 
             self.cache
-                .clone()
+                .get(page_name)
+                .unwrap()
                 .lines()
                 .map(|s| format!("    {s}\n"))
                 .collect::<String>()
@@ -39,11 +41,14 @@ impl MarkdownLoader {
                 info!("Regenerating HTML");
             }
 
-            self.cache =
-                file_to_html(Path::new(&self.path)).expect("Failed to load the Markdown file!");
+            self.cache.insert(
+                String::from("/"),
+                file_to_html(Path::new(&self.path)).expect("Failed to load the Markdown file!"),
+            );
 
             self.cache
-                .clone()
+                .get(page_name)
+                .unwrap()
                 .lines()
                 .map(|s| format!("    {s}\n"))
                 .collect::<String>()
@@ -115,7 +120,7 @@ fn handle_request(mut stream: TcpStream, markdown_loader: &mut MarkdownLoader) {
         "<!DOCTYPE html>\n<head>\n    <title>{}</title>\n{}</head>\n\n<body>\n{}</body>",
         markdown_loader.get_page_name(),
         CSS,
-        markdown_loader.load()
+        markdown_loader.load_page("/")
     );
     let length = data.len();
 

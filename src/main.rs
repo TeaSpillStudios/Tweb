@@ -1,3 +1,5 @@
+#![allow(unused_assignments)]
+
 use chrono::Utc;
 use log::{error, info, LevelFilter};
 use markdown::file_to_html;
@@ -9,9 +11,8 @@ use std::io::{BufRead, BufReader, Write};
 use std::net::{IpAddr, TcpListener, TcpStream};
 use std::path::Path;
 
-const LIVE_MODE: bool = true;
+const LIVE_MODE: bool = false;
 const LOG_IPS: bool = true;
-const MULTIPAGE: bool = true;
 const CSS: &str = include_str!("styles.css");
 
 #[derive(Default)]
@@ -42,17 +43,22 @@ impl MarkdownLoader {
                 info!("Regenerating HTML");
             }
 
-            if page_name == "" && !MULTIPAGE {
+            if page_name == "" {
                 self.cache.insert(
                     String::from(page_name),
                     file_to_html(Path::new(&self.root_path))
                         .expect("Failed to load the Markdown file!"),
                 );
             } else {
+                let page_file_name = match page_name.ends_with(".md") {
+                    true => page_name.to_string(),
+                    false => page_name.to_string() + ".md",
+                };
                 self.cache.insert(
-                    String::from(page_name),
-                    file_to_html(Path::new(page_name))
-                        .expect("Failed to load the specified Markdown file!"),
+                    page_name.to_string(),
+                    file_to_html(Path::new(&page_file_name)).expect(&format!(
+                        "Failed to load the specified Markdown file `{page_name}`!"
+                    )),
                 );
             }
 
@@ -62,6 +68,18 @@ impl MarkdownLoader {
                 .lines()
                 .map(|s| format!("    {s}\n"))
                 .collect::<String>()
+        }
+    }
+
+    pub fn validate_page(&self, page_name: &str) -> bool {
+        let page_file_name = match page_name.ends_with(".md") {
+            true => page_name.to_string(),
+            false => page_name.to_string() + ".md",
+        };
+
+        match page_name == "" {
+            true => true,
+            false => Path::new(&page_file_name).is_file(),
         }
     }
 
@@ -136,13 +154,26 @@ fn handle_request(mut stream: TcpStream, markdown_loader: &mut MarkdownLoader) {
                 .split('/')
                 .collect::<Vec<&str>>()[1];
 
-            let status = "HTTP/1.1 200 OK";
-            let data = format!(
-                "<!DOCTYPE html>\n<head>\n    <title>{}</title>\n{}</head>\n\n<body>\n{}</body>",
-                markdown_loader.get_page_name(),
-                CSS,
-                markdown_loader.load_page(get)
-            );
+            let ok = markdown_loader.validate_page(get);
+
+            let status = match ok {
+                true => "HTTP/1.1 200 OK",
+                false => "HTTP/1.1 404 PAGE_NOT_FOUND",
+            };
+
+            let mut data = String::new();
+
+            if ok {
+                data = format!(
+                    "<!DOCTYPE html>\n<head>\n    <title>{}</title>\n{}</head>\n\n<body>\n{}</body>",
+                    markdown_loader.get_page_name(),
+                    CSS,
+                    markdown_loader.load_page(get)
+                );
+            } else {
+                data = format!("<!DOCTYPE html>\n<head>\n    <title>Page not found</title>\n{}</head>\n\n<body>\n<h1>Page not found.</h1><p>Status code: 404</p></body>", CSS).to_string();
+            }
+
             let length = data.len();
 
             let response = format!("{status}\r\nContent-Length: {length}\r\n\r\n{data}");
@@ -150,8 +181,6 @@ fn handle_request(mut stream: TcpStream, markdown_loader: &mut MarkdownLoader) {
             stream
                 .write_all(response.as_bytes())
                 .expect("Failed to write to stream TCP.");
-
-            dbg!(get);
         }
     }
 }

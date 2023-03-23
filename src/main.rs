@@ -16,12 +16,12 @@ const CSS: &str = include_str!("styles.css");
 #[derive(Default)]
 struct MarkdownLoader {
     cache: HashMap<String, String>,
-    path: String,
+    root_path: String,
 }
 
 impl MarkdownLoader {
     pub fn load_page(&mut self, page_name: &str) -> String {
-        if self.path.is_empty() {
+        if self.root_path.is_empty() {
             return self.cache.get(page_name).unwrap().to_owned();
         }
 
@@ -43,7 +43,8 @@ impl MarkdownLoader {
 
             self.cache.insert(
                 String::from("/"),
-                file_to_html(Path::new(&self.path)).expect("Failed to load the Markdown file!"),
+                file_to_html(Path::new(&self.root_path))
+                    .expect("Failed to load the Markdown file!"),
             );
 
             self.cache
@@ -56,11 +57,11 @@ impl MarkdownLoader {
     }
 
     pub fn set_path(&mut self, path: String) {
-        self.path = path;
+        self.root_path = path;
     }
 
     pub fn get_page_name(&mut self) -> String {
-        let markdown_title = fs::read_to_string(&self.path).unwrap();
+        let markdown_title = fs::read_to_string(&self.root_path).unwrap();
 
         markdown_title
             .lines()

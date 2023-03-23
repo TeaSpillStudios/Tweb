@@ -41,11 +41,19 @@ impl MarkdownLoader {
                 info!("Regenerating HTML");
             }
 
-            self.cache.insert(
-                String::from(page_name),
-                file_to_html(Path::new(&self.root_path))
-                    .expect("Failed to load the Markdown file!"),
-            );
+            if page_name == "" {
+                self.cache.insert(
+                    String::from(page_name),
+                    file_to_html(Path::new(&self.root_path))
+                        .expect("Failed to load the Markdown file!"),
+                );
+            } else {
+                self.cache.insert(
+                    String::from(page_name),
+                    file_to_html(Path::new(page_name))
+                        .expect("Failed to load the specified Markdown file!"),
+                );
+            }
 
             self.cache
                 .get(page_name)

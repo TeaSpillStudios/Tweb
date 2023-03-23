@@ -107,13 +107,12 @@ fn main() {
 }
 
 fn handle_request(mut stream: TcpStream, markdown_loader: &mut MarkdownLoader) {
-    info!(
-        "Connection established: {}",
-        stream.peer_addr().unwrap().ip()
-    );
+    let peer_address = stream.peer_addr().unwrap().ip();
+
+    info!("Connection established: {peer_address}",);
 
     if LOG_IPS {
-        log_ip(stream.peer_addr().unwrap().ip());
+        log_ip(peer_address);
     }
 
     let status = "HTTP/1.1 200 OK";

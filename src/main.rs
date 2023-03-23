@@ -5,11 +5,11 @@ use std::collections::HashMap;
 use std::env::args;
 use std::fs;
 use std::fs::OpenOptions;
-use std::io::Write;
+use std::io::{BufRead, BufReader, Write};
 use std::net::{IpAddr, TcpListener, TcpStream};
 use std::path::Path;
 
-const LIVE_MODE: bool = false;
+const LIVE_MODE: bool = true;
 const LOG_IPS: bool = true;
 const CSS: &str = include_str!("styles.css");
 
@@ -115,20 +115,36 @@ fn handle_request(mut stream: TcpStream, markdown_loader: &mut MarkdownLoader) {
         log_ip(peer_address);
     }
 
-    let status = "HTTP/1.1 200 OK";
-    let data = format!(
-        "<!DOCTYPE html>\n<head>\n    <title>{}</title>\n{}</head>\n\n<body>\n{}</body>",
-        markdown_loader.get_page_name(),
-        CSS,
-        markdown_loader.load_page("/")
-    );
-    let length = data.len();
+    let http_request: Vec<_> = BufReader::new(&mut stream)
+        .lines()
+        .map(|result| result.unwrap())
+        .take_while(|line| !line.is_empty())
+        .collect();
 
-    let response = format!("{status}\r\nContent-Length: {length}\r\n\r\n{data}");
+    for line in http_request {
+        if line.contains("HTTP/1.1") {
+            let get = line.split(' ').collect::<Vec<&str>>()[1]
+                .split('/')
+                .collect::<Vec<&str>>()[1];
 
-    stream
-        .write_all(response.as_bytes())
-        .expect("Failed to write to stream TCP.");
+            let status = "HTTP/1.1 200 OK";
+            let data = format!(
+                "<!DOCTYPE html>\n<head>\n    <title>{}</title>\n{}</head>\n\n<body>\n{}</body>",
+                markdown_loader.get_page_name(),
+                CSS,
+                markdown_loader.load_page(get)
+            );
+            let length = data.len();
+
+            let response = format!("{status}\r\nContent-Length: {length}\r\n\r\n{data}");
+
+            stream
+                .write_all(response.as_bytes())
+                .expect("Failed to write to stream TCP.");
+
+            dbg!(get);
+        }
+    }
 }
 
 fn log_ip(ip: IpAddr) {

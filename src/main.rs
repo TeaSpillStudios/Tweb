@@ -11,6 +11,7 @@ use std::path::Path;
 
 const LIVE_MODE: bool = true;
 const LOG_IPS: bool = true;
+const MULTIPAGE: bool = true;
 const CSS: &str = include_str!("styles.css");
 
 #[derive(Default)]
@@ -41,7 +42,7 @@ impl MarkdownLoader {
                 info!("Regenerating HTML");
             }
 
-            if page_name == "" {
+            if page_name == "" && !MULTIPAGE {
                 self.cache.insert(
                     String::from(page_name),
                     file_to_html(Path::new(&self.root_path))

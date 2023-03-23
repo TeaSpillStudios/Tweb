@@ -87,8 +87,19 @@ impl MarkdownLoader {
         self.root_path = path;
     }
 
-    pub fn get_page_name(&mut self) -> String {
-        let markdown_title = fs::read_to_string(&self.root_path).unwrap();
+    pub fn get_page_name(&mut self, page_name: &str) -> String {
+        let mut page_file_name = String::new();
+
+        if page_name != "" {
+            page_file_name = match page_name.ends_with(".md") {
+                true => page_name.to_string(),
+                false => page_name.to_string() + ".md",
+            };
+        } else {
+            page_file_name = self.root_path.clone();
+        }
+
+        let markdown_title = fs::read_to_string(page_file_name).unwrap();
 
         markdown_title
             .lines()
@@ -124,7 +135,6 @@ fn main() {
     let listener = TcpListener::bind("0.0.0.0:7250").unwrap();
 
     info!("Initialised. Listening on `http://localhost:7250`");
-    info!("Page name: {}", markdown_loader.get_page_name());
 
     for stream in listener.incoming() {
         let stream = stream.unwrap();
@@ -166,7 +176,7 @@ fn handle_request(mut stream: TcpStream, markdown_loader: &mut MarkdownLoader) {
             if ok {
                 data = format!(
                     "<!DOCTYPE html>\n<head>\n    <title>{}</title>\n{}</head>\n\n<body>\n{}</body>",
-                    markdown_loader.get_page_name(),
+                    markdown_loader.get_page_name(get),
                     CSS,
                     markdown_loader.load_page(get)
                 );

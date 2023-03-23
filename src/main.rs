@@ -9,7 +9,7 @@ use std::io::Write;
 use std::net::{IpAddr, TcpListener, TcpStream};
 use std::path::Path;
 
-const LIVE_MODE: bool = true;
+const LIVE_MODE: bool = false;
 const LOG_IPS: bool = true;
 const CSS: &str = include_str!("styles.css");
 
@@ -42,7 +42,7 @@ impl MarkdownLoader {
             }
 
             self.cache.insert(
-                String::from("/"),
+                String::from(page_name),
                 file_to_html(Path::new(&self.root_path))
                     .expect("Failed to load the Markdown file!"),
             );

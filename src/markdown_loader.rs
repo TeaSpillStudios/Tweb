@@ -1,4 +1,4 @@
-use log::info;
+use log::{error, info};
 use markdown::file_to_html;
 use std::collections::HashMap;
 use std::fs;
@@ -32,7 +32,7 @@ impl MarkdownLoader {
                 info!("Regenerating HTML");
             }
 
-            if page_name == "" {
+            if page_name.is_empty() {
                 self.cache.insert(
                     String::from(page_name),
                     file_to_html(Path::new(&self.root_path))
@@ -45,9 +45,14 @@ impl MarkdownLoader {
                 };
                 self.cache.insert(
                     page_name.to_string(),
-                    file_to_html(Path::new(&page_file_name)).expect(&format!(
-                        "Failed to load the specified Markdown file `{page_name}`!"
-                    )),
+                    file_to_html(Path::new(&page_file_name)).unwrap_or_else(|_| {
+                        error!(
+                            "{}",
+                            format!("Failed to load the specified Markdown file `{page_name}`!")
+                        );
+
+                        String::from("")
+                    }),
                 );
             }
 
@@ -66,7 +71,7 @@ impl MarkdownLoader {
             false => page_name.to_string() + ".md",
         };
 
-        match page_name == "" {
+        match page_name.is_empty() {
             true => true,
             false => Path::new(&page_file_name).is_file(),
         }
@@ -79,7 +84,7 @@ impl MarkdownLoader {
     pub fn get_page_name(&mut self, page_name: &str) -> String {
         let mut page_file_name = String::new();
 
-        if page_name != "" {
+        if !page_name.is_empty() {
             page_file_name = match page_name.ends_with(".md") {
                 true => page_name.to_string(),
                 false => page_name.to_string() + ".md",

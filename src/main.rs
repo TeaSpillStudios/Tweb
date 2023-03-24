@@ -1,8 +1,8 @@
 #![allow(unused_assignments)]
 
-pub const LIVE_MODE: bool = false;
-pub const LOG_IPS: bool = true;
-pub const CSS: &str = include_str!("styles.css");
+const LIVE_MODE: bool = false;
+const LOG_IPS: bool = true;
+const CSS: &str = include_str!("styles.css");
 
 mod markdown_loader;
 

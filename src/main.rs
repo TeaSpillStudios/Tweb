@@ -78,13 +78,38 @@ fn handle_request(mut stream: TcpStream, markdown_loader: &mut MarkdownLoader) {
 
             if ok {
                 data = format!(
-                    "<!DOCTYPE html>\n<head>\n    <title>{}</title>\n{}</head>\n\n<body>\n{}</body>",
+                    "
+                    <!DOCTYPE html>
+                    <head>
+                        <title>{}</title>
+                        <meta charset='utf-8'>
+                        {}
+                    </head>
+
+                    <body>
+                        {}
+                    </body>",
                     markdown_loader.get_page_name(get),
                     CSS,
                     markdown_loader.load_page(get)
                 );
             } else {
-                data = format!("<!DOCTYPE html>\n<head>\n    <title>Page not found</title>\n{}</head>\n\n<body>\n<h1>Page not found.</h1><p>Status code: 404</p></body>", CSS).to_string();
+                data = format!(
+                    "
+                <!DOCTYPE html>
+                <head>
+                    <title>Page not found</title>
+                    <meta charset='utf-8'>
+                    {}
+                </head>
+
+                <body>
+                    <h1>Page not found.</h1>
+                    <p>Status code: 404</p>
+                </body>",
+                    CSS
+                )
+                .to_string();
             }
 
             let length = data.len();

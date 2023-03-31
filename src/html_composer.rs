@@ -1,3 +1,5 @@
+use log::warn;
+
 use crate::markdown_loader::MarkdownLoader;
 
 fn format_html(page_name: &str, css: String, html: String) -> String {
@@ -33,11 +35,15 @@ pub fn compose_html(page_name: &str, markdown_loader: &mut MarkdownLoader) -> St
             markdown_loader.load_page(page_name),
         ),
 
-        false => format_html(
-            "404",
-            String::from(crate::CSS),
-            String::from("<h1>Error: 404</h1><p>Page not found.</p>"),
-        ),
+        false => {
+            warn!("Page \"{page_name}\" not found!");
+
+            format_html(
+                "404",
+                String::from(crate::CSS),
+                String::from("<h1>Error: 404</h1><p>Page not found.</p>"),
+            )
+        }
     };
 
     format!("{status}\r\nContent-Length: {}\r\n\r\n{data}", data.len())

@@ -34,9 +34,9 @@ pub fn compose_html(page_name: &str, markdown_loader: &mut MarkdownLoader) -> St
         ),
 
         false => format_html(
-            "# 404\nPage not found.",
+            "404",
             String::from(crate::CSS),
-            markdown_loader.load_page(page_name),
+            String::from("<h1>Error: 404</h1><p>Page not found.</p>"),
         ),
     };
 

@@ -4,6 +4,7 @@ const LIVE_MODE: bool = false;
 const LOG_IPS: bool = true;
 const CSS: &str = include_str!("styles.css");
 
+mod html_composer;
 mod markdown_loader;
 
 use chrono::Utc;
@@ -14,6 +15,8 @@ use std::fs::OpenOptions;
 use std::io::{BufRead, BufReader, Write};
 use std::net::{IpAddr, TcpListener, TcpStream};
 use std::path::Path;
+
+use crate::html_composer::compose_html;
 
 fn main() {
     pretty_env_logger::formatted_builder()
@@ -67,59 +70,10 @@ fn handle_request(mut stream: TcpStream, markdown_loader: &mut MarkdownLoader) {
                 .split('/')
                 .collect::<Vec<&str>>()[1];
 
-            let ok = markdown_loader.validate_page(get);
-
-            let status = match ok {
-                true => "HTTP/1.1 200 OK",
-                false => "HTTP/1.1 404 PAGE_NOT_FOUND",
-            };
-
-            let mut data = String::new();
-
-            if ok {
-                data = format!(
-                    "
-                    <!DOCTYPE html>
-                    <head>
-                        <title>{}</title>
-                        <meta charset='utf-8'>
-                        {}
-                    </head>
-
-                    <body>
-                        {}
-                    </body>",
-                    markdown_loader.get_page_name(get),
-                    CSS,
-                    markdown_loader.load_page(get)
-                );
-            } else {
-                data = format!(
-                    "
-                <!DOCTYPE html>
-                <head>
-                    <title>Page not found</title>
-                    <meta charset='utf-8'>
-                    {}
-                </head>
-
-                <body>
-                    <h1>Page not found.</h1>
-                    <p>Status code: 404</p>
-                </body>",
-                    CSS
-                )
-                .to_string();
-            }
-
-            let length = data.len();
-
-            let response = format!("{status}\r\nContent-Length: {length}\r\n\r\n{data}");
-
             stream
-                .write_all(response.as_bytes())
-                .expect("Failed to write to stream TCP.");
-        }
+                .write_all(compose_html(get, markdown_loader).as_bytes())
+                .unwrap()
+        };
     }
 }
 

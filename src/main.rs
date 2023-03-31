@@ -11,7 +11,7 @@ use chrono::Utc;
 use log::{error, info, LevelFilter};
 use markdown_loader::MarkdownLoader;
 use std::env::args;
-use std::fs::OpenOptions;
+use std::fs::{create_dir, OpenOptions};
 use std::io::{BufRead, BufReader, Write};
 use std::net::{IpAddr, TcpListener, TcpStream};
 use std::path::Path;
@@ -78,10 +78,24 @@ fn handle_request(mut stream: TcpStream, markdown_loader: &mut MarkdownLoader) {
 }
 
 fn log_ip(ip: IpAddr) {
+    let data_dir = match dirs::data_dir() {
+        Some(v) => {
+            create_dir(&v.join("tweb")).unwrap();
+            v
+        }
+
+        None => {
+            error!("Cannot open log path!");
+            return;
+        }
+    };
+
+    let log_path = data_dir.join(Path::new("tweb/log.md"));
+
     let mut file = OpenOptions::new()
         .append(true)
         .create(true)
-        .open("./log.md")
+        .open(log_path)
         .unwrap();
 
     let date = Utc::now().date_naive().to_string();

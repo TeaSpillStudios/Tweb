@@ -1,6 +1,6 @@
 # Tweb
 
-A simple web markdown reader.
+A simple web markdown reader that has super powers.
 
 ## Usage:
 

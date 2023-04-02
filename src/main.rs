@@ -117,7 +117,7 @@ fn handle_request(mut stream: TcpStream, markdown_loader: &mut MarkdownLoader) {
 fn log_ip(ip: IpAddr) {
     let data_dir = match dirs::data_dir() {
         Some(v) => {
-            create_dir(&v.join("tweb")).ok();
+            create_dir(v.join("tweb")).ok();
             v
         }
 

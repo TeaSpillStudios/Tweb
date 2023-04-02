@@ -8,15 +8,19 @@ mod html_composer;
 mod markdown_loader;
 
 use chrono::Utc;
-use log::{error, info, LevelFilter};
+use chunked_transfer::Encoder;
+use log::{error, info, warn, LevelFilter};
 use markdown_loader::MarkdownLoader;
 use std::env::args;
-use std::fs::{create_dir, OpenOptions};
+use std::fs::{create_dir, File, OpenOptions};
+use std::io::Read;
 use std::io::{BufRead, BufReader, Write};
 use std::net::{IpAddr, TcpListener, TcpStream};
 use std::path::Path;
 
 use crate::html_composer::compose_html;
+
+const FILE_WHITELSIT: [&str; 1] = ["favicon.ico"];
 
 fn main() {
     pretty_env_logger::formatted_builder()
@@ -70,9 +74,36 @@ fn handle_request(mut stream: TcpStream, markdown_loader: &mut MarkdownLoader) {
                 .split('/')
                 .collect::<Vec<&str>>()[1];
 
-            stream
-                .write_all(compose_html(get, markdown_loader).as_bytes())
-                .unwrap()
+            if FILE_WHITELSIT.contains(&get) {
+                warn!("Sending plain text file: {get}");
+
+                let mut file = File::open(Path::new(get)).unwrap();
+                let mut buf = Vec::new();
+
+                file.read_to_end(&mut buf).unwrap();
+
+                let mut encoded = Vec::new();
+
+                {
+                    let mut encoder = Encoder::with_chunks_size(&mut encoded, 8);
+                    encoder.write_all(&buf).unwrap()
+                }
+
+                let headers = [
+                    "HTTP/1.1 200 OK",
+                    "Content-type: image/jpeg",
+                    "Transfer-Encoding: chunked",
+                    "\r\n",
+                ];
+                let mut response = headers.join("\r\n").to_string().into_bytes();
+                response.extend(encoded);
+
+                stream.write_all(&response).unwrap();
+            } else {
+                stream
+                    .write_all(compose_html(get, markdown_loader).as_bytes())
+                    .unwrap()
+            }
         };
     }
 }

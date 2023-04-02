@@ -11,6 +11,8 @@
         
         a {
         	color: white;
+			min-width: 48px;
+			min-height: 48px;
         }
         
         h1, h2, h3, h4, h5 {

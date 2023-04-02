@@ -77,7 +77,13 @@ fn handle_request(mut stream: TcpStream, markdown_loader: &mut MarkdownLoader) {
             if FILE_WHITELSIT.contains(&get) {
                 warn!("Sending plain text file: {get}");
 
-                let mut file = File::open(Path::new(get)).unwrap();
+                let mut file = match File::open(Path::new(get)) {
+                    Ok(v) => v,
+                    Err(_) => {
+                        warn!("Could not access file!");
+                        return;
+                    }
+                };
                 let mut buf = Vec::new();
 
                 file.read_to_end(&mut buf).unwrap();

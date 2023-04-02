@@ -13,6 +13,7 @@ fn format_html(page_name: &str, description: String, css: String, html: String) 
     <meta name=\"description\" content=\"{1}\">
     <meta property=\"og:title\" content=\"{0}\">
     <meta property=\"og:description\" content=\"{1}\">
+    <meta property=\"og:image\" content=\"favicon.ico\">
 
     {2}
 </head>

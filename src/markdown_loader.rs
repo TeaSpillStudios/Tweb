@@ -23,7 +23,7 @@ impl MarkdownLoader {
                 .get(page_name)
                 .unwrap()
                 .lines()
-                .map(|s| format!("    {s}\n"))
+                .map(|s| format!("        {s}\n"))
                 .collect::<String>()
         } else {
             if crate::LIVE_MODE {

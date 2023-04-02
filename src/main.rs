@@ -75,7 +75,7 @@ fn handle_request(mut stream: TcpStream, markdown_loader: &mut MarkdownLoader) {
                 .collect::<Vec<&str>>()[1];
 
             if FILE_WHITELSIT.contains(&get) {
-                warn!("Sending plain text file: {get}");
+                info!("Sending a normal file: {get}");
 
                 let mut file = match File::open(Path::new(get)) {
                     Ok(v) => v,

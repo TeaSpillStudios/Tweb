@@ -7,17 +7,19 @@ fn format_html(page_name: &str, description: String, css: String, html: String) 
         "
 <!DOCTYPE html>
 <head>
-    <title>{}</title>
+    <title>{0}</title>
     <meta charset='utf-8'>
     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
-    <meta name=\"description\" content=\"{}\">
+    <meta name=\"description\" content=\"{1}\">
+    <meta property=\"og:title\" content=\"{0}\">
+    <meta property=\"og:description\" content=\"{1}\">
 
-    {}
+    {2}
 </head>
 
 <body>
     <html lang=\"en\">
-{}
+{3}
     </html>
 </body>",
         page_name, description, css, html

@@ -16,6 +16,7 @@ rpath = false
 
 [dependencies]
 chrono = { version = "0.4.24", features = ["clock"] }
+chunked_transfer = "1.4.1"
 dirs = "5.0.0"
 log = "0.4.17"
 markdown = "0.3.0"

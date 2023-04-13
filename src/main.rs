@@ -23,6 +23,7 @@ use crate::html_composer::compose_html;
 const FILE_WHITELSIT: [&str; 1] = ["favicon.ico"];
 
 fn main() {
+    // Setup the logger.
     pretty_env_logger::formatted_builder()
         .filter_level(LevelFilter::Info)
         .init();
@@ -30,6 +31,7 @@ fn main() {
     let mut markdown_loader = MarkdownLoader::default();
     let args: Vec<String> = args().collect();
 
+    // Check if the file is parsed/exists.
     if args.len() > 1 {
         if !Path::new(&args[1]).is_file() {
             error!("Please specify a valid Markdown file!");
@@ -42,13 +44,16 @@ fn main() {
         return;
     }
 
+    // Create a TCP listener
     let listener = TcpListener::bind("0.0.0.0:7250").unwrap();
 
     info!("Initialised. Listening on `http://localhost:7250`");
 
+    // Listen for requests
     for stream in listener.incoming() {
         let stream = stream.unwrap();
 
+        // Handle the request
         handle_request(stream, &mut markdown_loader);
     }
 }
@@ -62,6 +67,7 @@ fn handle_request(mut stream: TcpStream, markdown_loader: &mut MarkdownLoader) {
         log_ip(peer_address);
     }
 
+    // Get data from the HTTP Header
     let http_request: Vec<_> = BufReader::new(&mut stream)
         .lines()
         .map(|result| result.unwrap())

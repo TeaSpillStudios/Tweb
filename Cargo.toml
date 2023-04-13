@@ -1,7 +1,19 @@
 [package]
 name = "tweb"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
+authors = [ "TeaSpillStudios <teaspillstudios@proton.me>" ]
+description = "A markdown renderer with super powers."
+readme = "README.md"
+homepage = "https://teaspillstudios.co.uk/tweb"
+repository = "https://github.com/teaspillstudios/tweb"
+license = "MIT"
+keywords = [ "web", "markdown", "webserver" ]
+categories = [ "web-prorgamming", "wep-programming::http-server" ]
+include = [ "/src", "LICENSE" ]
+
+[badges]
+maintenance = { status = "actively-developed" }
 
 [profile.release]
 opt-level = 3
